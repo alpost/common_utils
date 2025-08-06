@@ -13,7 +13,7 @@ def configure_logging(
     log_level=None,
     log_file=None,
     log_format=None,
-    log_rotation="size",
+    log_rotation="time",
     console_output=True
 ):
     """
@@ -37,6 +37,7 @@ def configure_logging(
         # Determine log level from arguments, environment, or default
         if log_level is None:
             log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+            logging.info(f"Using default log level: {log_level}")   
             
         # Convert string log level to logging constant
         numeric_level = getattr(logging, log_level, logging.INFO)
@@ -127,7 +128,12 @@ def configure_module_logging(
         # Propagate to root logger if module level is >= root level
     root_logger = logging.getLogger()
     root_numeric_level = root_logger.getEffectiveLevel()
-    module_numeric_level = getattr(logging, log_level, logging.INFO)
+    
+    if log_level and isinstance(log_level, str):
+            module_numeric_level = getattr(logging, log_level.upper(), logging.INFO)
+    else:
+        # If it's already a number, use it directly
+        module_numeric_level = log_level
     
     module_logger.propagate = (module_numeric_level >= root_numeric_level)
     
